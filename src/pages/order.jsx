@@ -5,7 +5,10 @@ import {
     Container,
     Typography,
     Dialog,
-    DialogTitle} from '@mui/material';
+    DialogTitle,
+    Snackbar,
+    Alert
+} from '@mui/material';
 import { Add } from '@mui/icons-material';
 import { LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
@@ -113,6 +116,7 @@ const Orders = () => {
                 isOpen: true
             });
         }
+        fetchOrdres()
         setFormData({
             orderNo: generateOrderNo(),
             styleName: '',
@@ -148,6 +152,10 @@ const Orders = () => {
     const handleClose = () => {
         setOpenModal(false)
     }
+    const handleCreateOrder = () => {
+        setFormData({ orderNo: generateOrderNo() })
+        setOpenModal(true)
+    }
     const fetchOrdres = async () => {
         try {
             const fetchedOrders = await useFetch("orders");
@@ -163,14 +171,28 @@ const Orders = () => {
     }, []);
 
     return (
-        <LocalizationProvider dateAdapter={AdapterDayjs}>
+        <div>
+            <Snackbar
+                open={toast.isOpen}
+                autoHideDuration={6000}
+                onClose={() => setToast({ ...toast, isOpen: false })}
+                anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+            >
+                <Alert
+                    severity={toast.severity}
+                    onClose={() => setToast({ ...toast, isOpen: false })}
+                >
+                    {toast.message}
+                </Alert>
+            </Snackbar>
+
             <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3 }}>
                     <Typography variant="h5">Order Creation</Typography>
                     <Button
                         variant="contained"
                         startIcon={<Add />}
-                        onClick={() => setOpenModal(true)}
+                        onClick={handleCreateOrder}
                     >
                         Create Order
                     </Button>
@@ -199,7 +221,7 @@ const Orders = () => {
                     </OrderFormContext.Provider>
                 </Dialog>
             </Container>
-        </LocalizationProvider>
+        </div>
     );
 };
 

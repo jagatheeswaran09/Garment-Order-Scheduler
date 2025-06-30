@@ -29,8 +29,8 @@ const ShiftFormList = () => {
                 <InputLabel id="demo-simple-select-autowidth-label">Shift</InputLabel>
                 <Select
                     label="Unit"
-                    name="unit"
-                    value={formData?.shift}
+                    name="shiftId"
+                    value={formData?.shiftId}
                     onChange={handleInputChange}
                     margin="normal"
                     required

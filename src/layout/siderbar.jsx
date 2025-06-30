@@ -89,7 +89,7 @@ const Sidebar = () => {
     { text: "Line Master", icon: <AssignmentIcon />, path: "/portal/lines" },
     { text: "Shift Master", icon: <ScheduleIcon />, path: "/portal/shifts" },
     { text: "Order Creation", icon: <AssignmentIcon />, path: "/portal/orders" },
-    { text: "Scheduler Calendar", icon: <PeopleIcon />, path: "/portal/users" }
+    { text: "Scheduler Calendar", icon: <PeopleIcon />, path: "/portal/scheduler" }
   ];
   return (
     <>
