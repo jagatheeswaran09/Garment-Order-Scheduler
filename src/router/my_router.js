@@ -1,6 +1,7 @@
 import AdminLayout from "../layout/layout";
 import LineMaster from "../pages/line";
 import Orders from "../pages/order";
+import SchedulerBoard from "../pages/schedule";
 import ShiftMaster from "../pages/shift";
 import UnitMaster from "../pages/units";
 
@@ -25,10 +26,15 @@ export const MY_ROUTES = [
         name: "Lines",
         component: LineMaster,
       },
-       {
+      {
         path: "orders",
         name: "Orders",
         component: Orders,
+      },
+      {
+        path: "scheduler",
+        name: "Scheduler",
+        component: SchedulerBoard,
       },
     ],
   },

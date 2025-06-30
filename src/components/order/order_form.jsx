@@ -8,7 +8,7 @@ import dayjs from 'dayjs';
 import { useOrderForm } from '../../services/order_form_context';
 
 const OrderForm = () => {
-    const { handleSubmit, formData, handleInputChange, handleClose, currentOrder } = useOrderForm()
+    const { handleSubmit, formData, handleInputChange, handleClose, currentOrder, setFormData } = useOrderForm()
     return (
         <div>
             <form onSubmit={handleSubmit}>
@@ -65,6 +65,7 @@ const OrderForm = () => {
                                 renderInput={(params) => (
                                     <TextField {...params} margin="normal" required />
                                 )}
+                                format='DD/MM/YYYY'
                             />
                         </Grid>
                         <UnitFormList />

@@ -45,6 +45,15 @@
       ],
       "shiftId": "",
       "unit": "4c37"
+    },
+    {
+      "id": "b827",
+      "orderNo": "ORD-002",
+      "styleName": "jahsh",
+      "quantity": "233",
+      "unitId": "fa06",
+      "shiftId": "4c37",
+      "deliveryDate": "2025-07-02T18:30:00.000Z"
     }
   ]
 }

@@ -21,6 +21,7 @@ const UnitFormList = () => {
     useEffect(() => {
         fetchUnits();
     }, []);
+    console.log("formData", formData);
 
     return (
         <Grid item xs={12}>
@@ -28,8 +29,8 @@ const UnitFormList = () => {
                 <InputLabel id="demo-simple-select-autowidth-label">Units</InputLabel>
                 <Select
                     label="Unit"
-                    name="unit"
-                    value={formData?.unit}
+                    name="unitId"
+                    value={formData?.unitId}
                     onChange={handleInputChange}
                     margin="normal"
                     required
