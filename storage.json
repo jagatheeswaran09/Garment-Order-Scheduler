@@ -1,0 +1,50 @@
+{
+  "units": [
+    {
+      "id": "fa06",
+      "name": "jaga",
+      "location": "chennai"
+    }
+  ],
+  "lines": [
+    {
+      "id": "3e6d",
+      "name": "jf2",
+      "unit": "fa06"
+    }
+  ],
+  "shifts": [
+    {
+      "id": "4c37",
+      "name": "Main Factory",
+      "unit": "",
+      "start_time": "12:29",
+      "end_time": "01:30"
+    }
+  ],
+  "orders": [
+    {
+      "id": "d91c",
+      "orderNo": "ORD-001",
+      "styleName": "jaga",
+      "quantity": "12",
+      "deliveryDate": "2025-07-07T12:12:23.390Z",
+      "unitId": "",
+      "lineIds": [],
+      "shiftId": ""
+    },
+    {
+      "id": "b67f",
+      "orderNo": "ORD-001",
+      "styleName": "jsw",
+      "quantity": "1",
+      "deliveryDate": "2025-07-07T12:48:48.235Z",
+      "unitId": "",
+      "lineIds": [
+        "3e6d"
+      ],
+      "shiftId": "",
+      "unit": "4c37"
+    }
+  ]
+}
