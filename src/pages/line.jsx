@@ -37,9 +37,9 @@ const LineMaster = () => {
       minWidth: 150
     },
     {
-      title: 'Unit',
-      dataIndex: 'unit_name',
-      key: 'unit_name',
+      title: 'Associate Unit',
+      dataIndex: 'unit',
+      key: 'unit',
       minWidth: 150
     }
   ];

@@ -8,9 +8,10 @@
   ],
   "lines": [
     {
-      "id": "3e6d",
-      "name": "jf2",
-      "unit": "fa06"
+      "id": "e471",
+      "name": "chek it",
+      "unit": "1122",
+      "capacity": 10000
     }
   ],
   "shifts": [
@@ -24,36 +25,17 @@
   ],
   "orders": [
     {
-      "id": "d91c",
-      "orderNo": "ORD-001",
-      "styleName": "jaga",
-      "quantity": "12",
-      "deliveryDate": "2025-07-07T12:12:23.390Z",
-      "unitId": "",
-      "lineIds": [],
-      "shiftId": ""
-    },
-    {
-      "id": "b67f",
+      "id": "6568",
       "orderNo": "ORD-001",
       "styleName": "jsw",
-      "quantity": "1",
-      "deliveryDate": "2025-07-07T12:48:48.235Z",
-      "unitId": "",
-      "lineIds": [
-        "3e6d"
-      ],
-      "shiftId": "",
-      "unit": "4c37"
-    },
-    {
-      "id": "b827",
-      "orderNo": "ORD-002",
-      "styleName": "jahsh",
-      "quantity": "233",
+      "quantity": "120",
+      "deliveryDate": "2025-07-03T18:30:00.000Z",
       "unitId": "fa06",
+      "UnitName": "jaga",
       "shiftId": "4c37",
-      "deliveryDate": "2025-07-02T18:30:00.000Z"
+      "shiftName": "Main Factory",
+      "lineIds": "e471",
+      "LinName": "chek it"
     }
   ]
 }

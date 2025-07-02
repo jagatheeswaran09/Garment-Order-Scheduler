@@ -1,142 +1,233 @@
-import React, { useState } from 'react';
-import { Box, Grid, Typography, Paper, Tooltip } from '@mui/material';
-import { styled } from '@mui/material/styles';
-import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
-import dayjs from 'dayjs';
+import React, { useEffect, useState } from "react";
+import dayjs from "dayjs";
+import { useFetch } from "../services/use_service";
 
-const days = [
-  '2025-06-09', '2025-06-10', '2025-06-11', '2025-06-12', '2025-06-13', '2025-06-14', '2025-06-15', '2025-06-16'
-];
+const startDate = dayjs("2025-06-09");
+const days = Array.from({ length: 14 }, (_, i) => startDate.add(i, "day"));
 
-const lines = [
-  { id: 'DG1', name: 'DG - Line 1', capacity: 1000 },
-  { id: 'DG2', name: 'DG - Line 2', capacity: 850 },
-  { id: 'DG3', name: 'DG - Line 3 (Cutting)', capacity: 5000 },
-  { id: 'SH1', name: 'SH - Line 1', capacity: 1200 },
-  { id: 'SH2', name: 'SH - Line 2 (Finishing)', capacity: 2000 },
-];
+const OrderSchedulerCustom = () => {
+  const [availableOrders, setAvailableOrders] = useState();
+  const [resourceLines, setResourceLines] = useState([]);
 
-const ordersData = {
-  order1: { id: 'order1', name: "Men's Basic Crew", qty: 1000, color: '#1976d2' },
-  order2: { id: 'order2', name: "Unisex Hoodie", qty: 1200, color: '#d81b60' },
-};
+  const [scheduledOrders, setScheduledOrders] = useState([]);
+  const [expandedLines, setExpandedLines] = useState({});
 
-const initialSchedule = {
-  'DG1-2025-06-10': ['order1'],
-  'SH1-2025-06-12': ['order2'],
-};
+  const toggleExpand = (lineId) => {
+    setExpandedLines((prev) => ({ ...prev, [lineId]: !prev[lineId] }));
+  };
+  console.log("resourceLines", resourceLines, availableOrders);
 
-const OrderBlock = styled(Paper)(({ theme, bgcolor }) => ({
-  padding: theme.spacing(1),
-  textAlign: 'center',
-  color: '#fff',
-  backgroundColor: bgcolor || theme.palette.primary.main,
-  cursor: 'grab',
-}));
+  const handleDrop = (lineId, dateStr, order) => {
+    const line = resourceLines.find((l) => l.id === lineId);
+    const date = dayjs(dateStr);
+    const daysNeeded = Math.ceil(order.qty / line.capacity);
+    const orderSpan = {
+      ...order,
+      lineId,
+      start: dateStr,
+      end: date.add(daysNeeded - 1, "day").format("YYYY-MM-DD"),
+      days: daysNeeded,
+    };
 
-const SchedulerBoard = () => {
-  const [schedule, setSchedule] = useState(initialSchedule);
+    const overlaps = scheduledOrders.some(
+      (o) =>
+        o.lineId === lineId &&
+        dayjs(o.start).isBefore(orderSpan.end) &&
+        dayjs(o.end).isAfter(orderSpan.start)
+    );
 
-  const onDragEnd = (result) => {
-    const { source, destination, draggableId } = result;
-    if (!destination) return;
+    if (overlaps) {
+      alert("This line already has an overlapping order.");
+      return;
+    }
 
-    const sourceKey = source.droppableId;
-    const destKey = destination.droppableId;
-
-    const sourceTasks = Array.from(schedule[sourceKey] || []);
-    const destTasks = Array.from(schedule[destKey] || []);
-
-    sourceTasks.splice(source.index, 1);
-    destTasks.splice(destination.index, 0, draggableId);
-
-    setSchedule({
-      ...schedule,
-      [sourceKey]: sourceTasks,
-      [destKey]: destTasks,
-    });
+    setScheduledOrders([...scheduledOrders, orderSpan]);
+    setAvailableOrders((prev) => prev.filter((o) => o.id !== order.id));
   };
 
-  const isWeekend = (dateStr) => {
-    const day = dayjs(dateStr).day();
-    return day === 0 || day === 6;
+  const fetchOrders = async () => {
+    let getOrders = await useFetch("orders");
+    setAvailableOrders(getOrders);
+  };
+  const fetchLines = async () => {
+    let getLines = await useFetch("lines");
+    setResourceLines(getLines);
+  };
+
+  useEffect(() => {
+    fetchLines();
+    fetchOrders();
+  }, []);
+
+  const renderCell = (lineId, dateStr, skipMap) => {
+    const order = scheduledOrders.find(
+      (o) => o.lineId === lineId && o.start === dateStr
+    );
+
+    if (skipMap[`${lineId}_${dateStr}`]) return null;
+
+    if (order) {
+      const colSpan = order.days;
+      for (let i = 1; i < colSpan; i++) {
+        const skipDate = dayjs(dateStr).add(i, "day").format("YYYY-MM-DD");
+        skipMap[`${lineId}_${skipDate}`] = true;
+      }
+
+      return (
+        <td
+          key={`${lineId}_${dateStr}`}
+          colSpan={colSpan}
+          style={{
+            background: order.color,
+            color: "#fff",
+            fontSize: 10,
+            textAlign: "left",
+            padding: 4,
+            border: "1px solid #ccc",
+            borderRadius: 4,
+          }}
+        >
+          {order.title} ({order.qty})
+        </td>
+      );
+    }
+
+    return (
+      <td
+        key={`${lineId}_${dateStr}`}
+        onDragOver={(e) => e.preventDefault()}
+        onDrop={(e) => {
+          const orderData = e.dataTransfer.getData("application/json");
+          if (!orderData) return;
+          const order = JSON.parse(orderData);
+          if (order) handleDrop(lineId, dateStr, order);
+        }}
+        style={{ border: "1px solid #ccc", height: 80 }}
+      ></td>
+    );
+  };
+
+  const renderTotals = () => {
+    return (
+      <tr style={{ background: "#f9f9f9", fontWeight: "bold" }}>
+        <td>Totals</td>
+        {days.map((d) => {
+          const date = d.format("YYYY-MM-DD");
+          let total = 0;
+          scheduledOrders.forEach((o) => {
+            const oStart = dayjs(o.start);
+            const oEnd = dayjs(o.end);
+            if (
+              dayjs(date).isBetween(
+                oStart.subtract(1, "day"),
+                oEnd.add(1, "day")
+              )
+            ) {
+              const line = resourceLines.find((l) => l.id === o.lineId);
+              const perDay = Math.ceil(o.qty / o.days);
+              total += Math.min(perDay, line?.capacity);
+            }
+          });
+          return (
+            <td
+              key={date}
+              style={{ fontSize: 10 }}
+            >{`${resourceLines[0]?.capacity} / ${total}`}</td>
+          );
+        })}
+      </tr>
+    );
   };
 
   return (
-    <Box display="flex">
-      {/* Sidebar */}
-      <Box width="200px" borderRight="1px solid #ccc">
-        <Typography variant="h6" sx={{ p: 2 }}>Resources</Typography>
-        {lines.map(line => (
-          <Box key={line.id} sx={{ p: 1, borderBottom: '1px solid #eee' }}>{line.name}</Box>
-        ))}
-      </Box>
-
-      {/* Scheduler */}
-      <Box overflow="auto" sx={{ flex: 1 }}>
-        <DragDropContext onDragEnd={onDragEnd}>
-          <Grid container>
-            {/* Header */}
-            <Grid container item>
-              {days.map(date => (
-                <Grid item key={date} xs={1.5} sx={{ p: 1, bgcolor: isWeekend(date) ? '#f0f0f0' : 'white' }}>
-                  <Typography variant="subtitle2">{dayjs(date).format('ddd DD')}</Typography>
-                </Grid>
+    <div style={{ display: "flex" }}>
+      <div style={{ flex: 1, overflowX: "auto" }}>
+        <table style={{ borderCollapse: "collapse", width: "100%" }}>
+          <thead>
+            <tr>
+              <th style={{ width: 150 }}>Line</th>
+              {days.map((d, index) => (
+                <th
+                  key={`month-${index}`}
+                  colSpan={1}
+                  style={{ textAlign: "center", background: "#f3f3f3" }}
+                >
+                  {index === 0 || d.date() === 1 ? d.format("MMMM YYYY") : ""}
+                </th>
               ))}
-            </Grid>
+            </tr>
+            <tr>
+              <th></th>
+              {days.map((d) => (
+                <th key={d.format("YYYY-MM-DD")}>{d.format("ddd DD")}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {resourceLines.map((line) => {
+              const skipMap = {};
+              return (
+                <tr
+                  key={line.id}
+                  style={{ height: expandedLines[line.id] ? "auto" : 60 }}
+                >
+                  <td>
+                    <div key={line.id} style={{ marginBottom: 10 }}>
+                      <div
+                        onClick={() => toggleExpand(line.id)}
+                        style={{
+                          cursor: "pointer",
+                          fontWeight: "bold",
+                          marginBottom: 4,
+                        }}
+                      >
+                        {expandedLines[line.id] ? "▼" : "▶"} {line.name}{" "}
+                        {/* (Capacity: {line.capacity}) */}
+                      </div>
+                      {expandedLines[line.id] && (
+                        <div style={{ paddingLeft: 10 }}>
+                          {availableOrders
+                            .filter((o) => o.lineIds === line.id)
+                            .map((order) => (
+                              <div
+                                key={order.id}
+                                draggable
+                                onDragStart={(e) =>
+                                  e.dataTransfer.setData(
+                                    "application/json",
+                                    JSON.stringify(order)
+                                  )
+                                }
+                                style={{
+                                  background: order.color,
+                                  color: "#fff",
+                                  padding: 6,
+                                  borderRadius: 4,
+                                  cursor: "grab",
+                                  fontSize: 11,
+                                  marginBottom: 4,
+                                }}
+                              >
+                                {order.title} ({order.qty})
+                              </div>
+                            ))}
+                        </div>
+                      )}
+                    </div>
+                  </td>
 
-            {/* Line rows */}
-            {lines.map(line => (
-              <Grid container item key={line.id}>
-                {days.map(date => {
-                  const droppableId = `${line.id}-${date}`;
-                  const isHoliday = isWeekend(date);
-
-                  return (
-                    <Grid item key={date} xs={1.5} sx={{ border: '1px solid #eee', height: 80 }}>
-                      <Droppable droppableId={droppableId} isDropDisabled={isHoliday} direction="vertical">
-                        {(provided) => (
-                          <Box
-                            ref={provided.innerRef}
-                            {...provided.droppableProps}
-                            sx={{ height: '100%', p: 0.5, bgcolor: isHoliday ? '#f0f0f0' : 'inherit' }}
-                          >
-                            {(schedule[droppableId] || []).map((orderId, idx) => {
-                              const order = ordersData[orderId];
-                              return (
-                                <Draggable draggableId={orderId} index={idx} key={orderId}>
-                                  {(provided) => (
-                                    <Tooltip title={`${order.name} (${order.qty})`}>
-                                      <OrderBlock
-                                        ref={provided.innerRef}
-                                        {...provided.draggableProps}
-                                        {...provided.dragHandleProps}
-                                        bgcolor={order.color}
-                                      >
-                                        {order.name}
-                                      </OrderBlock>
-                                    </Tooltip>
-                                  )}
-                                </Draggable>
-                              );
-                            })}
-                            {provided.placeholder}
-                            <Typography variant="caption">
-                              {line.capacity} / {(schedule[droppableId]?.length || 0) * 500}
-                            </Typography>
-                          </Box>
-                        )}
-                      </Droppable>
-                    </Grid>
-                  );
-                })}
-              </Grid>
-            ))}
-          </Grid>
-        </DragDropContext>
-      </Box>
-    </Box>
+                  {days.map((d) =>
+                    renderCell(line.id, d.format("YYYY-MM-DD"), skipMap)
+                  )}
+                </tr>
+              );
+            })}
+            {renderTotals()}
+          </tbody>
+        </table>
+      </div>
+    </div>
   );
 };
 
-export default SchedulerBoard;
+export default OrderSchedulerCustom;

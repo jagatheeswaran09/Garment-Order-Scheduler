@@ -1,7 +1,7 @@
 import AdminLayout from "../layout/layout";
 import LineMaster from "../pages/line";
 import Orders from "../pages/order";
-import SchedulerBoard from "../pages/schedule";
+import OrderScheduler from "../pages/schedule";
 import ShiftMaster from "../pages/shift";
 import UnitMaster from "../pages/units";
 
@@ -34,7 +34,7 @@ export const MY_ROUTES = [
       {
         path: "scheduler",
         name: "Scheduler",
-        component: SchedulerBoard,
+        component: OrderScheduler,
       },
     ],
   },
